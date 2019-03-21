@@ -1,0 +1,88 @@
+
+.global _start
+_start:
+  movi  r4, 40
+  movi  r5, 50
+  call  FUN1
+  add  r2, r0, r0
+  LAB1 br LAB1
+
+FUN1:
+  movi  r4, 540
+  call  FUN2
+  add   r2, r2, 1
+  ret
+
+FUN2:
+  movi  r2, 3
+  ret
+
+
+ra: 412,  508
+r2: 3,    4,    5,    6,
+pc: 400,  404,  408,  500,  504,  600,  604,  508,  512,  508,  512,  508,  512,  508,  512
+r4:
+r5:
+
+PREPROCESS  (.c, .cpp, .h)  -> cpp
+COMPILATION (.i)            -> g++, gcc
+ASSEMBLY    (.s)            -> as
+LINKING     (.o)            -> ld
+
+
+Library Function definition File
+-> EX
+F1.c
+  int f1(...) - Just Definition
+
+We Write:
+X.s
+  -start      - Actual Code
+  call f1
+
+Compile F1.c and X.s to make object files.
+Combine them together to make executable (.elf)
+Compile -> gcc X.o F1.o -o main.elf
+
+AND = MASKING
+OR = SETTING
+
+INTERRUPTS
+1) Enable Interrupt on the Device (Write a "1" at a particular location to enable an interrupt defined at that location)
+    -> stwio  r4, 0(r5)
+2) Enable Interrupt on the Processor
+    -> ienable  (register)
+    -> status   (register)
+    -> rdctl    (instruction)
+    -> wrctl    (instruction)
+    -> WE have to OR all outputs and AND it with status.PIE to turn on and off Interrupt changes
+3) Define ISR
+    -> .section
+        MY_ISR:
+        ...
+4) Set up the Stack
+    -> subi  sp, sp, 16
+       ...
+       addi  sp, sp, 16
+5) Check what interrupts are triggered from ipending
+    -> EX: Pushbutton
+    ->  rdctl  r24, ipending
+      CHK_IRQ1:
+        andi  r25, r24, 0b10
+        beq   r25, r0,  CHK_IRQ2
+        [Device Specific Code]
+      CHK_IRQ2:
+        ...
+        eret
+6) Device Specific Code
+    ->  movia r4, FLAG
+        ldw   r5, 0(r4)      -> LOAD
+        [beq   r5, r0, S1    -> MANIPULATE: if(r5 ==0) { r5 = 1  else  r5 = 0}
+      S1:            ]
+        stw   r5, 0(r4)      -> STORE
+7) Clear int on Device
+    -> Implicit JTAG_UART
+    -> Explicit Timer
+8) Return
+    -> subi ea, ea, 4     (eret sometimes skips an instruction so we have to use this step to set the return line to a line above)
+    -> eret
