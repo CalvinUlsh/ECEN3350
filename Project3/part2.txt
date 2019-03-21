@@ -1,0 +1,6 @@
+Part 2.1:
+<Calvin U  A+>
+
+Part 2.2:
+STUDENT_NAME_LEN: .word   <YOUR VALUE HERE>
+STUDENT_NAME:     .ascii  "<YOUR VALUE HERE>"
