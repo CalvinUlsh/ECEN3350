@@ -6,7 +6,7 @@
 sum_two:
   ldw   r4, 0(r2)
   ldw   r5, 0(r3)
-  addi  r6, r4, r5
+  add   r6, r4, r5
   ret
 
 .global op_three      ; Part 1.2 ~THREE INPUT OPERATION~
@@ -38,8 +38,4 @@ Minus2:                 ; Set Up Fibonacci(N - 2) After Fibonacci(N - 1) Branch 
   bne   r5, r0, LOOP    ; Break To Fibonacci(N - 2)
 DONE:
   ; Add Minus1 and Minus2 Value
-
-
-
-
 call Done
