@@ -2,61 +2,67 @@
 # Assignment:	Project 3.1
 # Name:			Calvin Ulsh
 
+# r2 and r3			return values
+# r4 - r7			register arguments
+# r8 - r15			caller-saved general purpose registers
+# r16 - r23			callee-saved general purpose registers
+
+
 .text
 .global sum_two             		# Part 1.1 Calling Convention ~SUM~
 sum_two:
-	add   r6, r4, r5
+	add   r3, r4, r5
 	ret
 
 .global op_three            		# Part 1.2 Saving Registers ~THREE INPUT OPERATION~
 op_three:
-	movia	r2,	A
-	movia	r3,	B
-	call	op_two
-	movia	r2,	C
-	mov 	r3,	r6
-	call	op_two
+	subi	sp, sp, 8				# push return address to stack - allocate
+	stw		ra, 4(sp)				# return address
+	stw		fp, 0(sp)				# frame pointer
+	call	op_two					# call two input function
+	ldw		ra, 4(sp)				# pop return address from stack
+	ldw		fp, 0(sp)				# pop frame pointer from stack
+	addi 	sp, sp, 8				# deallocate
+	mov		r4, r2					# set return value from op_two as new argument
+	mov		r5, r6
+	call	op_two					# call to compute the new argument
 	ret
 
 .global fibonacci               	# Part 1.3 Recursive Functions ~FIBONACCI~
 fibonacci:                      	# fibonacci(N - 1) + fibonacci(N - 2)
-  	addi	sp,	sp,	-8		    	# Entry code
-	stw		ra,	0(sp)
-	stw		fp,	4(sp)
-	add		fp,	sp,	r0				# End of entry code
-	ldw		r18,8(fp)			    # r18 holds the argument n
-	cmpeqi	r3,	r18,2          		# Compare n with 2. if r18 < 2 ...
-	beq		r3, r0,	skip        	# ... skip the next two instructions
-	addi	r2, r0,	1           	# n < 2. We're done with the recursion
-  	call	stop				    # Jump to exit code
-skip: 	                        	# n >= 2
-	addi	r18,r18,-1		    	# Calculate n - 1
-	addi	sp,	sp,	-4		    	# Allocate space for arguments
-	stw		r18,0(sp)			    # n - 1 is our argument
-	call	fibonacci				# Call the fibonacci procedure
-	addi	sp,	sp,	4           	# Pop off the argument
-	add		r3,	r2,	r0				# r2 holds the result of fibonacci(n - 1). Put the result into r3
-	ldw		r18,8(fp)            	# r18 holds the argument n
-	addi	r18,r18,-2        		# Calculate n - 2
-	addi	sp, sp,	-4          	# Allocate space for saved register
-	stw		r3, 0(sp)             	# Save r3 (the result of fibonacci(n - 1))
-	addi	sp, sp,	-4          	# Allocate space for arguments
-	stw		r18,0(sp)            	# n - 2 is our argument
-	call	fibonacci				# Call the fibonacci procedure
-	addi	sp, sp,	4           	# Pop off the argument
-	ldw		r3, 0(sp)             	# Restore r3 (the result of fibonacci(n - 1))
-	addi	sp, sp,	4           	# Deallocate space for saved register
-	add		r2, r3,	r2          	# r2 holds the result of fibonacci(n - 2).
+  	subi	sp,	sp,	12		    	# stack frame pointer
+	stw		ra,	8(sp)				# store return address
+	stw		fp,	4(sp)				# store frame pointer
+	addi	fp,	sp,	4				# end of entry code
+	cmpeqi	r15,r4, 1          		# Compare n with 2. if r18 < 2 ...
+	beq		r15,r0,	one        		# Skip To one If n = 1
+	beq		r4, r0,	zero           	# Skip To zero If n = 0
+	stw		r4,-4(fp)				# Store The Last Index Value
+	subi	r4, r4, 1				# Decrease by 1
+	call	fibonacci				# Recurse
+	ldw		r4,-4(fp)				# Pop
+	add		r2, r9, r10				# Set Up Next Fibonacci Number
+	mov		r9, r10					#
+	mov		r10,r2
+	br		stop
+one: 	  	                      	# n = 1
+	movi	r9,	0					# First Fibonacci Sequence Number
+	movi	r10,1					# Second Fibonacci Sequence Number
+	movi	r2, 1					# Third Fibonacci Sequence Number
+	br		stop					# Ready For Summation
+zero:								# n = 0
+	movi	r2, 0					# First Fibonacci Sequence Number
 stop:
-	ldw		ra, 0(sp)             	# Exit code
-	ldw		fp, 4(sp)
-	addi	sp, sp,		8
-	ret                      		# End of exit code
+	ldw		fp,	4(sp)				# Restore fp
+	ldw		ra,	8(sp)				# Restore ra
+	addi	sp, sp, 12				# Deallocate Stack Space
+	ret
+
 .data
 IN1:		.word 0x8
 IN2:		.word 0x6
 A:			.word 0x1
 B:			.word 0x2
-C:        .word 0x3
-N:        .word 0x7
+C:      	.word 0x3
+N:      	.word 0x7
 .end

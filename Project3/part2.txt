@@ -2,5 +2,5 @@ Part 2.1:
 Calvin U  A+
 
 Part 2.2:
-STUDENT_NAME_LEN: .word   <YOUR VALUE HERE>
-STUDENT_NAME:     .ascii  "<YOUR VALUE HERE>"
+STUDENT_NAME_LEN: .word   0x10
+STUDENT_NAME:     .ascii  "CalvinUlshhh\xCC\x00\x00\x00"
